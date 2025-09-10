@@ -1,103 +1,182 @@
-import Image from "next/image";
+"use client";
+import { useEffect, useState, useRef } from "react";
+import ChatInput from "@/components/ChatInput";
+import ChatResponseList from "@/components/ChatResponse";
+import SelectModelsModal from "@/components/SelectModelsModal";
+import HistoryModal from "@/components/HistoryModal";
+import StatsModal from "@/components/StatsModal";
+import SettingsModal from "@/components/SettingsModal";
+import useChatStore from "@/context/chatStore";
+import gsap from "gsap";
+import { Bot, MessageSquare, BarChart3, Settings } from "lucide-react";
 
-export default function Home() {
+export default function HomePage() {
+  const [loading, setLoading] = useState(false);
+  const [openSelect, setOpenSelect] = useState(false);
+  const [openHistory, setOpenHistory] = useState(false);
+  const [openStats, setOpenStats] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false);
+
+  const { selectedModels, apiKeys, addOrUpdateConversation, conversations, setTemperature } =
+    useChatStore();
+
+  const latestConversation = conversations[0] ?? null;
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const t = localStorage.getItem("temperature");
+    if (t) setTemperature(Number(t));
+  }, [setTemperature]);
+
+  useEffect(() => {
+    gsap.from(headerRef.current, { y: -40, opacity: 0, duration: 1, ease: "power3.out" });
+    gsap.from(mainRef.current, { y: 30, opacity: 0, duration: 1.2, delay: 0.2, ease: "power3.out" });
+  }, []);
+
+  async function handleSend(prompt: string) {
+    if (!selectedModels.length) {
+      setOpenSelect(true);
+      return;
+    }
+    setLoading(true);
+
+    const payload = {
+      prompt,
+      models: Array.from(new Set(selectedModels)), // de-dupe just in case
+      keys: apiKeys,
+      temperature: Number(localStorage.getItem("temperature") || 0.7),
+    };
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Network error");
+      const json = await res.json();
+
+      addOrUpdateConversation({
+        id: Date.now().toString(),
+        prompt,
+        responses: json.responses,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.error(e);
+      addOrUpdateConversation({
+        id: Date.now().toString(),
+        prompt,
+        responses: Object.fromEntries(
+          payload.models.map((m: string) => [m, "Error calling model"])
+        ) as Record<string, string>,
+        createdAt: new Date().toISOString(),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-slate-100 font-sans flex flex-col">
+      {/* HEADER */}
+      <header
+        ref={headerRef}
+        className="bg-black/20 backdrop-blur-lg border-b border-white/10 sticky top-0 z-40"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Left */}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
+                <Bot size={28} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  Multi-LLM Chat System
+                </h1>
+                <p className="text-slate-400 text-sm">Compare AI responses across multiple models</p>
+              </div>
+            </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {/* Right */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setOpenSelect(true)}
+                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
+              >
+                <Bot className="w-4 h-4" />
+                <span>Select Models</span>
+              </button>
+
+              <button
+                onClick={() => setOpenHistory(true)}
+                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Chat History</span>
+              </button>
+
+              <button
+                onClick={() => setOpenStats(true)}
+                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Stats</span>
+              </button>
+
+              <button
+                onClick={() => setOpenSettings(true)}
+                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Settings</span>
+              </button>
+            </div>
+          </div>
         </div>
+      </header>
+
+      {/* MAIN */}
+      <main ref={mainRef} className="flex-1 w-full flex flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-4xl">
+          {/* ✅ No selectedCount prop needed now */}
+          <ChatInput onSend={handleSend} loading={loading} />
+        </div>
+
+        {/* Responses */}
+        {latestConversation && (
+          <div className="w-full max-w-4xl mt-6">
+            <ChatResponseList />
+          </div>
+        )}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      {/* MODALS */}
+      <SelectModelsModal open={openSelect} onClose={() => setOpenSelect(false)} />
+      <HistoryModal open={openHistory} onClose={() => setOpenHistory(false)} />
+      <StatsModal open={openStats} onClose={() => setOpenStats(false)} />
+      <SettingsModal open={openSettings} onClose={() => setOpenSettings(false)} />
+
+      {/* Custom Scrollbar */}
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.5);
+        }
+      `}</style>
     </div>
   );
 }
