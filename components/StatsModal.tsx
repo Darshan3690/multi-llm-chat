@@ -7,7 +7,7 @@ export default function StatsModal({ open, onClose }: { open: boolean; onClose: 
 
   // Define the Conversation type if not already defined or import it from your types
   type Conversation = {
-    responses: Record<string, any>;
+    responses: Record<string, string>;
     // add other properties if needed
   };
 
