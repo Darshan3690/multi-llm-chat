@@ -1,4 +1,10 @@
+
 import fetch from "node-fetch";
+
+// Type for OpenAI/Perplexity/Claude/Mistral/Cohere response
+type OpenRouterResponse = { choices?: { message?: { content?: string } }[] };
+// Type for Gemini response
+type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[] };
 
 export async function callLLMs(
   prompt: string,
@@ -32,7 +38,9 @@ export async function callLLMs(
           }),
         });
 
-  const js: any = await res.json();
+  // Type for OpenAI/Perplexity/Claude/Mistral/Cohere response
+  type OpenRouterResponse = { choices?: { message?: { content?: string } }[] };
+  const js = await res.json() as OpenRouterResponse;
   results[model] = js.choices?.[0]?.message?.content ?? "⚠️ No response from ChatGPT";
       }
 
@@ -56,7 +64,9 @@ export async function callLLMs(
           }
         );
 
-  const js: any = await res.json();
+  // Type for Gemini response
+  type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+  const js = await res.json() as GeminiResponse;
         results[model] =
           js.candidates?.[0]?.content?.parts?.[0]?.text ?? "⚠️ No response from Gemini";
       }
@@ -83,7 +93,7 @@ export async function callLLMs(
           }),
         });
 
-  const js: any = await res.json();
+  const js = await res.json() as OpenRouterResponse;
         results[model] =
           js.choices?.[0]?.message?.content ?? "⚠️ No response from Perplexity";
       }
@@ -110,7 +120,7 @@ export async function callLLMs(
     }),
   });
 
-  const js: any = await res.json();
+  const js = await res.json() as OpenRouterResponse;
   results[model] =
     js.choices?.[0]?.message?.content ?? "⚠️ No response from Claude (OpenRouter)";
 }
@@ -137,7 +147,7 @@ export async function callLLMs(
           }),
         });
 
-  const js: any = await res.json();
+  const js = await res.json() as OpenRouterResponse;
         results[model] =
           js.choices?.[0]?.message?.content ?? "⚠️ No response from Mistral";
       }
@@ -164,7 +174,7 @@ export async function callLLMs(
           }),
         });
 
-  const js: any = await res.json();
+  const js = await res.json() as OpenRouterResponse;
         results[model] =
           js.choices?.[0]?.message?.content ?? "⚠️ No response from Cohere";
       }
