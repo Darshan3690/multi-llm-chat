@@ -32,8 +32,8 @@ export async function callLLMs(
           }),
         });
 
-        const js = await res.json();
-        results[model] = js.choices?.[0]?.message?.content ?? "⚠️ No response from ChatGPT";
+  const js: any = await res.json();
+  results[model] = js.choices?.[0]?.message?.content ?? "⚠️ No response from ChatGPT";
       }
 
       // ---------------------- Gemini ----------------------
@@ -56,7 +56,7 @@ export async function callLLMs(
           }
         );
 
-        const js = await res.json();
+  const js: any = await res.json();
         results[model] =
           js.candidates?.[0]?.content?.parts?.[0]?.text ?? "⚠️ No response from Gemini";
       }
@@ -83,7 +83,7 @@ export async function callLLMs(
           }),
         });
 
-        const js = await res.json();
+  const js: any = await res.json();
         results[model] =
           js.choices?.[0]?.message?.content ?? "⚠️ No response from Perplexity";
       }
@@ -110,7 +110,7 @@ export async function callLLMs(
     }),
   });
 
-  const js = await res.json();
+  const js: any = await res.json();
   results[model] =
     js.choices?.[0]?.message?.content ?? "⚠️ No response from Claude (OpenRouter)";
 }
@@ -137,7 +137,7 @@ export async function callLLMs(
           }),
         });
 
-        const js = await res.json();
+  const js: any = await res.json();
         results[model] =
           js.choices?.[0]?.message?.content ?? "⚠️ No response from Mistral";
       }
@@ -164,7 +164,7 @@ export async function callLLMs(
           }),
         });
 
-        const js = await res.json();
+  const js: any = await res.json();
         results[model] =
           js.choices?.[0]?.message?.content ?? "⚠️ No response from Cohere";
       }
