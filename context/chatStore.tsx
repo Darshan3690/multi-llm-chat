@@ -29,7 +29,7 @@ type ChatState = {
 
 const useChatStore = create<ChatState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       conversations: [],
       selectedModels: [],
       apiKeys: {},

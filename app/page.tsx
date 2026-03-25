@@ -28,8 +28,6 @@ export default function HomePage() {
   const { selectedModels, apiKeys, addOrUpdateConversation, conversations, setTemperature } =
     useChatStore();
 
-  const latestConversation = conversations[0] ?? null;
-
   const headerRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLDivElement>(null);
 
