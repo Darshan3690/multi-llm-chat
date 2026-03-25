@@ -1,10 +1,19 @@
-
 import fetch from "node-fetch";
 
-// Type for OpenAI/Perplexity/Claude/Mistral/Cohere response
 type OpenRouterResponse = { choices?: { message?: { content?: string } }[] };
-// Type for Gemini response
 type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[] };
+
+const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+
+async function readOpenRouterText(res: Response, fallback: string) {
+  const json = (await res.json()) as OpenRouterResponse;
+  return json.choices?.[0]?.message?.content ?? fallback;
+}
+
+async function readGeminiText(res: Response) {
+  const json = (await res.json()) as GeminiResponse;
+  return json.candidates?.[0]?.content?.parts?.[0]?.text ?? "⚠️ No response from Gemini";
+}
 
 export async function callLLMs(
   prompt: string,
@@ -16,7 +25,6 @@ export async function callLLMs(
 
   for (const model of models) {
     try {
-      // ---------------------- ChatGPT (OpenAI) ----------------------
       if (model === "chatgpt") {
         const key = keys.chatgpt;
         if (!key) {
@@ -24,7 +32,7 @@ export async function callLLMs(
           continue;
         }
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const res = await fetch(OPENROUTER_ENDPOINT, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${key}`,
@@ -38,14 +46,8 @@ export async function callLLMs(
           }),
         });
 
-  // Type for OpenAI/Perplexity/Claude/Mistral/Cohere response
-  type OpenRouterResponse = { choices?: { message?: { content?: string } }[] };
-  const js = await res.json() as OpenRouterResponse;
-  results[model] = js.choices?.[0]?.message?.content ?? "⚠️ No response from ChatGPT";
-      }
-
-      // ---------------------- Gemini ----------------------
-      else if (model === "gemini") {
+        results[model] = await readOpenRouterText(res, "⚠️ No response from ChatGPT");
+      } else if (model === "gemini") {
         const key = keys.gemini;
         if (!key) {
           results[model] = "❌ No Gemini API key provided";
@@ -64,22 +66,15 @@ export async function callLLMs(
           }
         );
 
-  // Type for Gemini response
-  type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[] };
-  const js = await res.json() as GeminiResponse;
-        results[model] =
-          js.candidates?.[0]?.content?.parts?.[0]?.text ?? "⚠️ No response from Gemini";
-      }
-
-      // ---------------------- Perplexity ----------------------
-      else if (model === "perplexity") {
+        results[model] = await readGeminiText(res);
+      } else if (model === "perplexity") {
         const key = keys.perplexity;
         if (!key) {
           results[model] = "❌ No Perplexity API key provided";
           continue;
         }
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const res = await fetch(OPENROUTER_ENDPOINT, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${key}`,
@@ -93,47 +88,40 @@ export async function callLLMs(
           }),
         });
 
-  const js = await res.json() as OpenRouterResponse;
-        results[model] =
-          js.choices?.[0]?.message?.content ?? "⚠️ No response from Perplexity";
-      }
+        results[model] = await readOpenRouterText(res, "⚠️ No response from Perplexity");
+      } else if (model === "claude") {
+        const key = keys.claude;
+        if (!key) {
+          results[model] = "❌ No Claude API key provided";
+          continue;
+        }
 
-      // ---------------------- Claude ----------------------
-      else if (model === "claude") {
-  const key = keys.claude; // <-- should be OPENROUTER key
-  if (!key) {
-    results[model] = "❌ No Claude API key provided";
-    continue;
-  }
+        const res = await fetch(OPENROUTER_ENDPOINT, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "anthropic/claude-3.5-sonnet",
+            messages: [{ role: "user", content: prompt }],
+            temperature,
+            max_tokens: 512,
+          }),
+        });
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "anthropic/claude-3.5-sonnet",
-      messages: [{ role: "user", content: prompt }],
-      temperature,
-      max_tokens: 512,
-    }),
-  });
-
-  const js = await res.json() as OpenRouterResponse;
-  results[model] =
-    js.choices?.[0]?.message?.content ?? "⚠️ No response from Claude (OpenRouter)";
-}
-
-      // ---------------------- Mistral ----------------------
-      else if (model === "mistral") {
+        results[model] = await readOpenRouterText(
+          res,
+          "⚠️ No response from Claude (OpenRouter)"
+        );
+      } else if (model === "mistral") {
         const key = keys.mistral;
         if (!key) {
           results[model] = "❌ No Mistral API key provided";
           continue;
         }
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const res = await fetch(OPENROUTER_ENDPOINT, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${key}`,
@@ -147,20 +135,15 @@ export async function callLLMs(
           }),
         });
 
-  const js = await res.json() as OpenRouterResponse;
-        results[model] =
-          js.choices?.[0]?.message?.content ?? "⚠️ No response from Mistral";
-      }
-
-      // ---------------------- Cohere ----------------------
-      else if (model === "cohere") {
+        results[model] = await readOpenRouterText(res, "⚠️ No response from Mistral");
+      } else if (model === "cohere") {
         const key = keys.cohere;
         if (!key) {
           results[model] = "❌ No Cohere API key provided";
           continue;
         }
 
-        const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        const res = await fetch(OPENROUTER_ENDPOINT, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${key}`,
@@ -174,12 +157,8 @@ export async function callLLMs(
           }),
         });
 
-  const js = await res.json() as OpenRouterResponse;
-        results[model] =
-          js.choices?.[0]?.message?.content ?? "⚠️ No response from Cohere";
-      }
-
-      else {
+        results[model] = await readOpenRouterText(res, "⚠️ No response from Cohere");
+      } else {
         results[model] = `❓ Unknown model identifier: ${model}`;
       }
     } catch (err) {

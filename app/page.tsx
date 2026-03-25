@@ -8,7 +8,15 @@ import StatsModal from "@/components/StatsModal";
 import SettingsModal from "@/components/SettingsModal";
 import useChatStore from "@/context/chatStore";
 import gsap from "gsap";
-import { Bot, MessageSquare, BarChart3, Settings } from "lucide-react";
+
+const MODEL_COLORS: Record<string, string> = {
+  chatgpt: "#34d399",
+  claude: "#a78bfa",
+  gemini: "#fb923c",
+  mistral: "#60a5fa",
+  perplexity: "#f472b6",
+  cohere: "#facc15",
+};
 
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
@@ -80,78 +88,100 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] text-slate-100 font-sans flex flex-col">
+    <div className="relative min-h-screen bg-[#05030d] text-slate-100 font-sans overflow-hidden">
+      {/* Animated background orbs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+        <div className="grid-overlay" />
+      </div>
       {/* HEADER */}
       <header
         ref={headerRef}
-        className="bg-black/20 backdrop-blur-lg border-b border-white/10 sticky top-0 z-40"
+        className="bg-white/5 backdrop-blur-2xl border-b border-white/10 sticky top-0 z-20"
       >
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Left */}
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-                <Bot size={28} className="text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Multi-LLM Chat System
-                </h1>
-                <p className="text-slate-400 text-sm">Compare AI responses across multiple models</p>
-              </div>
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-2xl animate-[glow-pulse_3s_ease-in-out_infinite]">
+              ⚡
             </div>
-
-            {/* Right */}
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setOpenSelect(true)}
-                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
-              >
-                <Bot className="w-4 h-4" />
-                <span>Select Models</span>
-              </button>
-
-              <button
-                onClick={() => setOpenHistory(true)}
-                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Chat History</span>
-              </button>
-
-              <button
-                onClick={() => setOpenStats(true)}
-                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Stats</span>
-              </button>
-
-              <button
-                onClick={() => setOpenSettings(true)}
-                className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all flex items-center gap-2 text-sm font-medium text-white"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Settings</span>
-              </button>
+            <div>
+              <h1 className="text-xl font-semibold text-white tracking-tight">Multi-LLM Chat</h1>
+              <p className="text-xs text-white/50">Compare AI across models</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button className="nav-pill active" onClick={() => setOpenSelect(true)}>
+              Models
+            </button>
+            <button className="nav-pill" onClick={() => setOpenHistory(true)}>
+              History
+            </button>
+            <button className="nav-pill" onClick={() => setOpenStats(true)}>
+              Stats
+            </button>
+            <button className="nav-pill" onClick={() => setOpenSettings(true)}>
+              Settings
+            </button>
           </div>
         </div>
       </header>
 
       {/* MAIN */}
-      <main ref={mainRef} className="flex-1 w-full flex flex-col items-center justify-center px-4 py-12">
-        <div className="w-full max-w-4xl">
-          {/* ✅ No selectedCount prop needed now */}
-          <ChatInput onSend={handleSend} loading={loading} />
-        </div>
+      <main
+        ref={mainRef}
+        className="relative z-10 max-w-5xl mx-auto w-full px-6 py-10 space-y-6"
+      >
+        <section className="flex flex-wrap items-center gap-2">
+          {selectedModels.length > 0 ? (
+            selectedModels.map((m) => {
+              const color = MODEL_COLORS[m] ?? "#94a3b8";
+              return (
+                <span
+                  key={m}
+                  className="model-chip"
+                  style={{
+                    borderColor: `${color}55`,
+                    background: `${color}18`,
+                    color,
+                  }}
+                >
+                  <span
+                    className="model-chip-dot"
+                    style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+                  />
+                  {m.toUpperCase()}
+                </span>
+              );
+            })
+          ) : (
+            <span className="text-sm text-white/40">Select models to start comparing outputs.</span>
+          )}
+          <button
+            onClick={() => setOpenSelect(true)}
+            className="model-chip border-dashed border-white/30 text-white/60 hover:text-white hover:border-white/60"
+          >
+            + Add model
+          </button>
+        </section>
 
-        {/* Responses */}
-        {latestConversation && (
-          <div className="w-full max-w-4xl mt-6">
-            <ChatResponseList />
-          </div>
-        )}
+        <ChatInput onSend={handleSend} loading={loading} />
+
+        <ChatResponseList loading={loading} />
+
+        <div className="status-bar">
+          <span className="status-dot" />
+          <span>All models connected</span>
+          <span className="status-sep" />
+          <span>
+            {selectedModels.length} model{selectedModels.length !== 1 ? "s" : ""} active
+          </span>
+          <span className="status-sep" />
+          <span>
+            Session: {conversations.length} prompt{conversations.length !== 1 ? "s" : ""}
+          </span>
+        </div>
       </main>
 
       {/* MODALS */}
@@ -159,24 +189,6 @@ export default function HomePage() {
       <HistoryModal open={openHistory} onClose={() => setOpenHistory(false)} />
       <StatsModal open={openStats} onClose={() => setOpenStats(false)} />
       <SettingsModal open={openSettings} onClose={() => setOpenSettings(false)} />
-
-      {/* Custom Scrollbar */}
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.3);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-      `}</style>
     </div>
   );
 }

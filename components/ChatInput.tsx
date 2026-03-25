@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { MessageSquare, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import useChatStore from "@/context/chatStore";
 
 export default function ChatInput({
@@ -11,7 +11,8 @@ export default function ChatInput({
   loading?: boolean;
 }) {
   const [prompt, setPrompt] = useState("");
-  const selectedModels = useChatStore((s) => s.selectedModels); // ✅ inside
+  const selectedModels = useChatStore((s) => s.selectedModels);
+  const temperature = useChatStore((s) => s.temperature);
   const selectedCount = selectedModels.length;
 
   const handleSendClick = () => {
@@ -21,21 +22,15 @@ export default function ChatInput({
   };
 
   return (
-    <div className="bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10 p-4 sm:p-6 w-full">
-      <h3 className="text-lg font-semibold mb-4 flex items-center">
-        <MessageSquare className="w-5 h-5 mr-2 text-purple-400" />
-        Enter Your Prompt
-      </h3>
+    <div className="prompt-card hover:border-purple-500/40 hover:shadow-[0_20px_80px_rgba(139,92,246,0.15)] transition-all duration-300">
+      <div className="prompt-label">✦ Your Prompt</div>
 
-      <div className="space-y-4">
-        <textarea
+      <textarea
           rows={4}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Enter your prompt here..."
-          className="w-full p-4 bg-white/5 border border-white/10 rounded-lg 
-                     focus:border-purple-500 focus:outline-none resize-y 
-                     min-h-[100px] text-white placeholder-slate-400"
+          placeholder="Explain how neural networks learn from data in simple terms"
+          className="w-full bg-transparent border-0 text-base text-white/80 placeholder:text-white/30 focus:outline-none resize-none min-h-[120px] leading-7"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -44,31 +39,19 @@ export default function ChatInput({
           }}
         />
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0">
-          <div className="text-sm text-slate-400 mb-2">
-            {selectedCount} model{selectedCount !== 1 ? "s" : ""} selected
-          </div>
+      <div className="flex flex-col gap-3 border-t border-white/10 pt-4 mt-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="prompt-meta">
+          {selectedCount} model{selectedCount !== 1 ? "s" : ""} · Temp {temperature.toFixed(1)} · Shift+Enter for newline
+        </p>
 
-          <button
-            disabled={!prompt.trim() || loading}
-            onClick={handleSendClick}
-            className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 
-                       hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 
-                       px-6 py-3 rounded-lg transition-all flex items-center justify-center font-medium"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin w-4 h-4 border-2 border-white/20 border-t-white rounded-full mr-2" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                Generate Responses
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          disabled={!prompt.trim() || loading}
+          onClick={handleSendClick}
+          className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 font-semibold text-sm shadow-lg shadow-purple-500/30 disabled:opacity-50"
+        >
+          <Send className="w-4 h-4" />
+          {loading ? "Generating..." : "Generate"}
+        </button>
       </div>
     </div>
   );

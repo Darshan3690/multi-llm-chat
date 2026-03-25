@@ -26,15 +26,16 @@ export default function HistoryModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-slate-900 text-white p-6 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-lg" onClick={onClose}></div>
+      <div className="relative z-50 bg-black/70 text-white p-6 rounded-3xl border border-white/10 max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Chat History</h2>
           <div className="flex items-center gap-2">
             <button
               onClick={clearConversations}
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md flex items-center gap-1"
+              className="bg-red-600/80 hover:bg-red-600 text-white px-3 py-2 rounded-md flex items-center gap-1"
             >
               <Trash2 size={16} />
               Clear All History
@@ -60,7 +61,7 @@ export default function HistoryModal({
         {conversations.map((c: Conversation) => (
           <div
             key={c.id}
-            className="p-3 rounded-md border border-slate-700 bg-slate-800 mb-4"
+            className="p-4 rounded-xl border border-white/10 bg-white/5 mb-4"
           >
             <div className="flex justify-between items-center">
               <div className="text-xs text-slate-400">
@@ -69,7 +70,7 @@ export default function HistoryModal({
               {/* ✅ delete single conversation */}
               <button
                 onClick={() => deleteConversation(c.id)}
-                className="text-red-400 hover:text-red-600 text-xs"
+                className="text-red-400 hover:text-red-500 text-xs"
               >
                 Delete
               </button>
@@ -78,9 +79,9 @@ export default function HistoryModal({
             <div className="font-medium mt-1">{c.prompt}</div>
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
               {Object.entries(c.responses).map(([m, r]) => (
-                <div key={m} className="p-2 bg-slate-700 rounded">
+                <div key={m} className="p-2 bg-black/40 border border-white/5 rounded">
                   <div className="text-xs text-slate-400">{m.toUpperCase()}</div>
-                  <div className="text-sm">{r}</div>
+                  <div className="text-sm text-slate-200">{r}</div>
                 </div>
               ))}
             </div>
