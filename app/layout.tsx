@@ -1,5 +1,11 @@
 import "./globals.css";
 import { ReactNode } from "react";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export const metadata = {
   title: "Multi-LLM Chat",
@@ -8,17 +14,9 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={inter.className}>
       <body className="bg-[#05030d] text-slate-100">
-        <div>
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );

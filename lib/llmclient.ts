@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 type OpenRouterResponse = { choices?: { message?: { content?: string } }[] };
 type GeminiResponse = { candidates?: { content?: { parts?: { text?: string }[] } }[] };
 
