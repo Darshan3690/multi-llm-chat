@@ -1,16 +1,15 @@
 import withPWAInit from "next-pwa";
 import type { NextConfig } from "next";
 
-const withPWA = withPWAInit({
+const withPWA = require("next-pwa")({
   dest: "public",
-  disable: process.env.NODE_ENV === "development",
 });
 
-const nextConfig: NextConfig = {
-  reactStrictMode: true,
-  // Explicitly set to silence workspace root inference warnings during build
-  outputFileTracingRoot: __dirname,
-  turbopack: false,
+const nextConfig = {
+  turbopack: {}, // ✅ MUST be object (not false)
 };
 
 export default withPWA(nextConfig);
+
+
+
