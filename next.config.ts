@@ -8,6 +8,8 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Explicitly set to silence workspace root inference warnings during build
+  outputFileTracingRoot: __dirname,
 };
 
 export default withPWA(nextConfig);
