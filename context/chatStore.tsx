@@ -20,6 +20,7 @@ type ChatState = {
   deleteConversation: (id: string) => void;
   clearConversations: () => void;
   setSelectedModels: (m: string[]) => void;
+  clearSelectedModels: () => void;
   toggleModel: (model: string) => void;
   setApiKey: (provider: string, key: string) => void;
   removeApiKey: (provider: string) => void;
@@ -60,11 +61,7 @@ const useChatStore = create<ChatState>()(
       setSelectedModels: (m) =>
         set({ selectedModels: Array.from(new Set(m)) }),
 
-      // setSelectedModels: (m) => set({ selectedModels: m }),
-
-// 👇 new action
-clearSelectedModels: () => set({ selectedModels: [] }),
-
+      clearSelectedModels: () => set({ selectedModels: [] }),
 
       // ✅ Toggle add/remove a single model
       toggleModel: (model) =>

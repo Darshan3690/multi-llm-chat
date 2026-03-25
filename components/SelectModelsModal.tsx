@@ -46,12 +46,19 @@ export default function SelectModelsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-lg" onClick={onClose}></div>
 
       {/* Modal */}
-      <div className="relative z-50 w-full max-w-2xl rounded-2xl 
-                      bg-[#0f0f1a] border border-purple-500/40 shadow-xl p-6">
-        <h3 className="text-lg font-semibold mb-6 text-white">Select Models</h3>
+      <div className="relative z-50 w-full max-w-2xl rounded-3xl bg-black/60 border border-white/10 shadow-2xl p-6 text-slate-100">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-xl font-semibold">Select Models</h3>
+            <p className="text-sm text-slate-400">Pick the providers you want active for the next prompt.</p>
+          </div>
+          <span className="text-xs px-3 py-1 rounded-full bg-white/5 border border-white/10">
+            {localSelected.length} active
+          </span>
+        </div>
 
         <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
           {models.map((m) => (
@@ -60,7 +67,7 @@ export default function SelectModelsModal({
               <div
                 className={`flex items-center justify-between p-4 rounded-lg border ${
                   localSelected.includes(m.id)
-                    ? "border-purple-500 bg-purple-900/30"
+                    ? "border-white/30 bg-white/10"
                     : "border-white/10 bg-white/5"
                 }`}
               >
@@ -88,7 +95,7 @@ export default function SelectModelsModal({
               </div>
 
               {/* API Key Input */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#1a1a2e] border border-white/10">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-black/30 border border-white/10">
                 <Key className="w-4 h-4 text-gray-400" />
                 <input
                   type={showKeys[m.id] ? "text" : "password"}
@@ -120,15 +127,15 @@ export default function SelectModelsModal({
         <div className="mt-6 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 
+            className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 
                        text-sm text-gray-200 border border-white/10"
           >
             Cancel
           </button>
           <button
             onClick={save}
-            className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 
-                       text-white text-sm font-medium shadow-md"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 
+                       text-white text-sm font-medium shadow-md shadow-purple-500/30"
           >
             Save
           </button>
