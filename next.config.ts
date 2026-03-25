@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Explicitly set to silence workspace root inference warnings during build
   outputFileTracingRoot: __dirname,
+  turbopack: false,
 };
 
 export default withPWA(nextConfig);
